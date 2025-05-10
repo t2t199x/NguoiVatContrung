@@ -2,28 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Nhận diện Người / Động vật / Côn trùng</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.18.0/dist/tf.min.js"></script>
 </head>
 <body>
   <h1>Người / Động vật / Côn trùng</h1>
   <video id="webcam" autoplay playsinline width="640" height="480" style="border:1px solid black;"></video>
   <br />
-  <button id="start-button">Khởi động camera</button>
+  <button onclick="init()">Khởi động camera</button>
 
   <script>
-    const video = document.getElementById('webcam');
-    const button = document.getElementById('start-button');
-
-    button.addEventListener('click', async () => {
+    async function init() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
+        document.getElementById('webcam').srcObject = stream;
+
+        // Load model
+        const model = await tf.loadGraphModel('model.json'); // hoặc tf.loadLayersModel nếu dùng loại đó
+        console.log('Model loaded', model);
       } catch (err) {
-        alert('Không thể truy cập camera: ' + err.message);
+        alert('Lỗi: ' + err.message);
         console.error(err);
       }
-    });
+    }
   </script>
 </body>
 </html>
