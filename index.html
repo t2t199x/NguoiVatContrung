@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Nhận diện Người, Vật, Côn trùng</title>
+  <title>Người / Động vật / Côn trùng</title>
 </head>
 <body>
-  <h1>Nhận diện bằng camera</h1>
-  <video id="webcam" autoplay playsinline width="300" height="225"></video>
+  <h1>Người / Động vật / Côn trùng</h1>
+  <button onclick="init()">Khởi động camera</button>
+  <div id="webcam-container"></div>
   <div id="label-container"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
@@ -22,19 +23,23 @@
       maxPredictions = model.getTotalClasses();
 
       const flip = true;
-      webcam = new tmImage.Webcam(300, 225, flip);
-      await webcam.setup({ facingMode: "user" }).then(() => {
-        return webcam.play();
-      }).catch(err => {
-        alert("Không thể truy cập camera: " + err.message);
-      });
+      webcam = new tmImage.Webcam(300, 300, flip);
 
-      window.requestAnimationFrame(loop);
+      try {
+        await webcam.setup();
+        await webcam.play();
+        window.requestAnimationFrame(loop);
 
-      document.getElementById("webcam").appendChild(webcam.canvas);
-      labelContainer = document.getElementById("label-container");
-      for (let i = 0; i < maxPredictions; i++) {
-        labelContainer.appendChild(document.createElement("div"));
+        // Hiển thị camera
+        document.getElementById("webcam-container").appendChild(webcam.canvas);
+
+        // Hiển thị kết quả
+        labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) {
+          labelContainer.appendChild(document.createElement("div"));
+        }
+      } catch (err) {
+        alert("Lỗi truy cập camera: " + err.message);
       }
     }
 
@@ -47,12 +52,11 @@
     async function predict() {
       const prediction = await model.predict(webcam.canvas);
       for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction = prediction[i].className + ": " + (prediction[i].probability * 100).toFixed(2) + "%";
+        const classPrediction = prediction[i].className + ": " +
+          (prediction[i].probability * 100).toFixed(2) + "%";
         labelContainer.childNodes[i].innerText = classPrediction;
       }
     }
-
-    init();
   </script>
 </body>
 </html>
