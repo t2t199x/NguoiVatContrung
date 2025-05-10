@@ -1,62 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Người / Động vật / Côn trùng</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nhận diện Người / Động vật / Côn trùng</title>
 </head>
 <body>
   <h1>Người / Động vật / Côn trùng</h1>
-  <button onclick="init()">Khởi động camera</button>
-  <div id="webcam-container"></div>
-  <div id="label-container"></div>
+  <video id="webcam" autoplay playsinline width="640" height="480" style="border:1px solid black;"></video>
+  <br />
+  <button id="start-button">Khởi động camera</button>
 
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
   <script>
-    const URL = "./";
-    let model, webcam, labelContainer, maxPredictions;
+    const video = document.getElementById('webcam');
+    const button = document.getElementById('start-button');
 
-    async function init() {
-      const modelURL = URL + "model.json";
-      const metadataURL = URL + "metadata.json";
-
-      model = await tmImage.load(modelURL, metadataURL);
-      maxPredictions = model.getTotalClasses();
-
-      const flip = true;
-      webcam = new tmImage.Webcam(300, 300, flip);
-
+    button.addEventListener('click', async () => {
       try {
-        await webcam.setup();
-        await webcam.play();
-        window.requestAnimationFrame(loop);
-
-        // Hiển thị camera
-        document.getElementById("webcam-container").appendChild(webcam.canvas);
-
-        // Hiển thị kết quả
-        labelContainer = document.getElementById("label-container");
-        for (let i = 0; i < maxPredictions; i++) {
-          labelContainer.appendChild(document.createElement("div"));
-        }
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
       } catch (err) {
-        alert("Lỗi truy cập camera: " + err.message);
+        alert('Không thể truy cập camera: ' + err.message);
+        console.error(err);
       }
-    }
-
-    async function loop() {
-      webcam.update();
-      await predict();
-      window.requestAnimationFrame(loop);
-    }
-
-    async function predict() {
-      const prediction = await model.predict(webcam.canvas);
-      for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction = prediction[i].className + ": " +
-          (prediction[i].probability * 100).toFixed(2) + "%";
-        labelContainer.childNodes[i].innerText = classPrediction;
-      }
-    }
+    });
   </script>
 </body>
 </html>
